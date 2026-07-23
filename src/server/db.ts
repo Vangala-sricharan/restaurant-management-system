@@ -4,7 +4,10 @@ import bcrypt from 'bcryptjs';
 import { User, MenuItem, Category, Order, AdminStats } from '../types';
 import { CATEGORIES, INITIAL_MENU_ITEMS } from '../data/seedData';
 
-const DB_FILE = path.join(process.cwd(), 'restauranthub_data.json');
+const READONLY_SEED_FILE = path.join(process.cwd(), 'restauranthub_data.json');
+const WRITEABLE_DB_FILE = process.env.VERCEL || process.env.NODE_ENV === 'production'
+  ? path.join('/tmp', 'restauranthub_data.json')
+  : path.join(process.cwd(), 'restauranthub_data.json');
 
 interface DbSchema {
   users: User[];
@@ -22,16 +25,39 @@ let memoryDb: DbSchema = {
   orders: []
 };
 
+let dbInitialized = false;
+
+export async function ensureDbInitialized() {
+  if (!dbInitialized || memoryDb.users.length === 0) {
+    await initDb();
+    dbInitialized = true;
+  }
+}
+
 // Initialize DB with seed data if not present
 export async function initDb() {
-  if (fs.existsSync(DB_FILE)) {
+  if (fs.existsSync(WRITEABLE_DB_FILE)) {
     try {
-      const data = fs.readFileSync(DB_FILE, 'utf-8');
+      const data = fs.readFileSync(WRITEABLE_DB_FILE, 'utf-8');
       memoryDb = JSON.parse(data);
-      console.log('Loaded database from', DB_FILE);
+      console.log('Loaded database from', WRITEABLE_DB_FILE);
+      dbInitialized = true;
       return;
     } catch (e) {
-      console.error('Failed to parse database file, re-initializing...', e);
+      console.error('Failed to parse writeable database file, falling back to seed...', e);
+    }
+  }
+
+  if (fs.existsSync(READONLY_SEED_FILE) && READONLY_SEED_FILE !== WRITEABLE_DB_FILE) {
+    try {
+      const data = fs.readFileSync(READONLY_SEED_FILE, 'utf-8');
+      memoryDb = JSON.parse(data);
+      console.log('Loaded seed database from', READONLY_SEED_FILE);
+      dbInitialized = true;
+      saveDb();
+      return;
+    } catch (e) {
+      console.error('Failed to parse seed file, re-seeding...', e);
     }
   }
 
@@ -156,7 +182,11 @@ export async function initDb() {
 
 export function saveDb() {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(memoryDb, null, 2));
+    const dir = path.dirname(WRITEABLE_DB_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(WRITEABLE_DB_FILE, JSON.stringify(memoryDb, null, 2));
   } catch (e) {
     console.error('Failed to save DB to file', e);
   }
