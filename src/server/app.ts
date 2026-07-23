@@ -70,13 +70,15 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+const router = express.Router();
+
 // Health check
-app.get('/api/health', (req, res) => {
+router.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'RestaurantHub API' });
 });
 
 // Auth Routes
-app.post('/api/auth/register', async (req: Request, res: Response) => {
+router.post('/auth/register', async (req: Request, res: Response) => {
   try {
     const { name, email, password, phone, address, role } = req.body;
 
@@ -110,7 +112,7 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/auth/login', async (req: Request, res: Response) => {
+router.post('/auth/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -145,7 +147,7 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/api/auth/me', authenticateToken, (req: AuthRequest, res: Response) => {
+router.get('/auth/me', authenticateToken, (req: AuthRequest, res: Response) => {
   const user = findUserById(req.user!.id);
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
@@ -153,7 +155,7 @@ app.get('/api/auth/me', authenticateToken, (req: AuthRequest, res: Response) => 
   res.json({ user });
 });
 
-app.put('/api/user/profile', authenticateToken, (req: AuthRequest, res: Response) => {
+router.put('/user/profile', authenticateToken, (req: AuthRequest, res: Response) => {
   try {
     const { name, phone, address } = req.body;
     const updatedUser = updateUserProfile(req.user!.id, { name, phone, address });
@@ -164,7 +166,7 @@ app.put('/api/user/profile', authenticateToken, (req: AuthRequest, res: Response
 });
 
 // Public Menu & Categories Routes
-app.get('/api/dishes', (req: Request, res: Response) => {
+router.get('/dishes', (req: Request, res: Response) => {
   const { search, category, dietary, sort } = req.query;
   const items = getMenuItems({
     search: search as string,
@@ -175,13 +177,13 @@ app.get('/api/dishes', (req: Request, res: Response) => {
   res.json(items);
 });
 
-app.get('/api/categories', (req: Request, res: Response) => {
+router.get('/categories', (req: Request, res: Response) => {
   const categories = getCategories();
   res.json(categories);
 });
 
 // Orders Routes
-app.post('/api/orders', authenticateToken, (req: AuthRequest, res: Response) => {
+router.post('/orders', authenticateToken, (req: AuthRequest, res: Response) => {
   try {
     const { items, customerName, customerPhone, deliveryAddress, paymentMethod } = req.body;
 
@@ -218,23 +220,23 @@ app.post('/api/orders', authenticateToken, (req: AuthRequest, res: Response) => 
   }
 });
 
-app.get('/api/orders/user', authenticateToken, (req: AuthRequest, res: Response) => {
+router.get('/orders/user', authenticateToken, (req: AuthRequest, res: Response) => {
   const orders = getUserOrders(req.user!.id);
   res.json(orders);
 });
 
 // Admin Routes
-app.get('/api/admin/stats', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
+router.get('/admin/stats', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
   const stats = getAdminStats();
   res.json(stats);
 });
 
-app.get('/api/admin/orders', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
+router.get('/admin/orders', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
   const orders = getAllOrders();
   res.json(orders);
 });
 
-app.patch('/api/admin/orders/:id/status', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
+router.patch('/admin/orders/:id/status', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.body;
     const order = updateOrderStatus(req.params.id, status);
@@ -244,7 +246,7 @@ app.patch('/api/admin/orders/:id/status', authenticateToken, requireAdmin, (req:
   }
 });
 
-app.post('/api/admin/dishes', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
+router.post('/admin/dishes', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
   try {
     const { name, description, price, imageUrl, category, dietary, spiciness, preparationTime } = req.body;
     if (!name || !price || !category) {
@@ -271,7 +273,7 @@ app.post('/api/admin/dishes', authenticateToken, requireAdmin, (req: AuthRequest
   }
 });
 
-app.put('/api/admin/dishes/:id', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
+router.put('/admin/dishes/:id', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
   try {
     const dish = updateMenuItem(req.params.id, req.body);
     res.json(dish);
@@ -280,7 +282,7 @@ app.put('/api/admin/dishes/:id', authenticateToken, requireAdmin, (req: AuthRequ
   }
 });
 
-app.delete('/api/admin/dishes/:id', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
+router.delete('/admin/dishes/:id', authenticateToken, requireAdmin, (req: AuthRequest, res: Response) => {
   try {
     deleteMenuItem(req.params.id);
     res.json({ message: 'Menu item deleted successfully' });
@@ -288,5 +290,9 @@ app.delete('/api/admin/dishes/:id', authenticateToken, requireAdmin, (req: AuthR
     res.status(400).json({ message: error.message || 'Failed to delete dish' });
   }
 });
+
+// Mount router on BOTH '/api' and '/' for dual path support
+app.use('/api', router);
+app.use('/', router);
 
 export default app;
