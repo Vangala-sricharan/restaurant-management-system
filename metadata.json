@@ -1,0 +1,6 @@
+{
+  "name": "RestaurantHub",
+  "description": "A complete modern premium restaurant management system with authentic Indian cuisine menu, online ordering, customer management, and real-time admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
