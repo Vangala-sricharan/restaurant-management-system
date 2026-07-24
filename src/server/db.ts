@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import { User, MenuItem, Category, Order, AdminStats } from '../types';
-import { CATEGORIES, INITIAL_MENU_ITEMS } from '../data/seedData';
+import { User, MenuItem, Category, Order, AdminStats } from '../types.js';
+import { CATEGORIES, INITIAL_MENU_ITEMS } from '../data/seedData.js';
 
 const READONLY_SEED_FILE = path.join(process.cwd(), 'restauranthub_data.json');
 const WRITEABLE_DB_FILE = process.env.VERCEL || process.env.NODE_ENV === 'production'

@@ -18,8 +18,8 @@ import {
   getAllOrders,
   updateOrderStatus,
   getAdminStats
-} from './db';
-import { UserRole } from '../types';
+} from './db.js';
+import { UserRole } from '../types.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'restaurant_hub_jwt_secret_key_2026';
 

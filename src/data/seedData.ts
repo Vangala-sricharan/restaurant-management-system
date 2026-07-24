@@ -1,4 +1,4 @@
-import { Category, MenuItem } from '../types';
+import { Category, MenuItem } from '../types.js';
 
 export const CATEGORIES: Category[] = [
   { id: 'cat-1', name: 'Starters', slug: 'starters', icon: 'Flame', description: 'Tandoori & sizzlers to ignite your palate' },
