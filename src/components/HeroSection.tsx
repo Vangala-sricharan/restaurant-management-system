@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { UtensilsCrossed, Sparkles, Flame, Clock, Award } from 'lucide-react';
+import { INITIAL_MENU_ITEMS } from '../data/seedData';
 
 interface HeroSectionProps {
   onExploreMenu: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onExploreMenu }) => {
+  const [dishCount, setDishCount] = useState<number>(INITIAL_MENU_ITEMS.length);
+
+  useEffect(() => {
+    fetch('/api/dishes')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setDishCount(data.length);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-[#0A0A0A] pt-12 pb-20 border-b border-white/10">
       {/* Background glow graphics */}
@@ -25,7 +39,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onExploreMenu }) => {
             </h1>
 
             <p className="text-base sm:text-lg text-white/60 max-w-2xl leading-relaxed font-sans">
-              Seamlessly explore and order our culinary empire. From charcoal-singed tandoori tikka to slow-dum biryanis and silky butter chicken — experience 40+ authentic dishes curated fresh by master chefs.
+              Seamlessly explore and order our culinary empire. From charcoal-singed tandoori tikka to slow-dum biryanis and silky butter chicken — experience {dishCount}+ authentic dishes curated fresh by master chefs.
             </p>
 
             {/* CTA buttons */}
@@ -35,7 +49,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onExploreMenu }) => {
                 className="w-full sm:w-auto px-8 py-4 rounded-sm bg-[#C9A227] hover:bg-[#d8b02e] text-black text-xs uppercase font-bold tracking-widest shadow-xl shadow-[#C9A227]/10 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3"
               >
                 <UtensilsCrossed className="w-4 h-4" />
-                <span>Browse Menu (40 Dishes)</span>
+                <span>Browse Menu ({dishCount} Dishes)</span>
               </button>
 
               <div className="flex items-center gap-2 px-6 py-3.5 rounded-sm bg-[#1A1A1A] border border-white/10 text-white/80 text-xs font-medium uppercase tracking-wider">
@@ -47,7 +61,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onExploreMenu }) => {
             {/* Feature stats */}
             <div className="mt-8 pt-8 flex gap-12 items-center border-t border-white/10 max-w-lg mx-auto lg:mx-0">
               <div>
-                <p className="text-3xl font-serif text-[#C9A227]">40+</p>
+                <p className="text-3xl font-serif text-[#C9A227]">{dishCount}+</p>
                 <p className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Authentic Dishes</p>
               </div>
               <div className="w-px h-10 bg-white/10"></div>

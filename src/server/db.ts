@@ -32,6 +32,10 @@ export async function ensureDbInitialized() {
     await initDb();
     dbInitialized = true;
   }
+  if (memoryDb.menuItems.length < INITIAL_MENU_ITEMS.length) {
+    memoryDb.menuItems = INITIAL_MENU_ITEMS;
+    saveDb();
+  }
 }
 
 // Initialize DB with seed data if not present

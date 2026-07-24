@@ -25,7 +25,7 @@ export const PopularDishesSection: React.FC<PopularDishesSectionProps> = ({ onEx
             onClick={onExploreMenu}
             className="mt-4 md:mt-0 inline-flex items-center gap-2 text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors"
           >
-            <span>View All 40 Dishes</span>
+            <span>View All Dishes</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
