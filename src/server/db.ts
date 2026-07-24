@@ -32,8 +32,22 @@ export async function ensureDbInitialized() {
     await initDb();
     dbInitialized = true;
   }
+  const initialMap = new Map(INITIAL_MENU_ITEMS.map(item => [item.id, item]));
+  let updated = false;
   if (memoryDb.menuItems.length < INITIAL_MENU_ITEMS.length) {
     memoryDb.menuItems = INITIAL_MENU_ITEMS;
+    updated = true;
+  } else {
+    memoryDb.menuItems = memoryDb.menuItems.map(item => {
+      const fresh = initialMap.get(item.id);
+      if (fresh && fresh.imageUrl !== item.imageUrl) {
+        updated = true;
+        return { ...item, imageUrl: fresh.imageUrl };
+      }
+      return item;
+    });
+  }
+  if (updated) {
     saveDb();
   }
 }
